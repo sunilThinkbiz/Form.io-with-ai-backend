@@ -18,25 +18,28 @@ const axiosInstance = axios.create({
 
 // ✅ Merge logic: update only what's needed, don't duplicate
 function mergeSchemas(existingComponents, generatedComponents) {
-  const updated = [...existingComponents];
-
-  generatedComponents.forEach((newComp) => {
-    const index = updated.findIndex((c) => c.key === newComp.key);
-
-    if (index !== -1) {
-      // Update only the modified parts of the component
-      updated[index] = { ...updated[index], ...newComp };
-    } else {
-      // Only push if the key doesn't already exist
-      const duplicateKey = updated.find((c) => c.key === newComp.key);
-      if (!duplicateKey) {
-        updated.push(newComp);
-      }
-    }
+  const existingMap = new Map();
+  existingComponents.forEach((comp) => {
+    existingMap.set(comp.key, comp);
   });
 
-  return updated;
+  const final = [];
+
+  for (const newComp of generatedComponents) {
+    const existing = existingMap.get(newComp.key);
+    if (existing) {
+      final.push({ ...existing, ...newComp }); // merge while keeping new order
+      existingMap.delete(newComp.key);
+    } else {
+      final.push(newComp);
+    }
+  }
+
+  return final;
 }
+
+
+
 
 
 // ✅ AI-based form update route
@@ -79,6 +82,12 @@ Rules:
 - Ensure valid Form.io structure.
 
 Only return JSON. Do not explain anything.
+Additional Capabilities:
+- If the user requests field reordering (e.g., "move email to top"), reorder the components accordingly.
+- If the prompt suggests layout changes, use appropriate Form.io containers like:
+  - "columns" for side-by-side layout
+  - "panel" or "fieldset" for grouping fields
+- Preserve the rest of the form structure unless a change is explicitly requested.
 `;
 
 
