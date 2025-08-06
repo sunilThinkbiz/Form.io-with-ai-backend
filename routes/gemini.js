@@ -6,10 +6,9 @@ const https = require("https");
 
 // ✅ Axios instance setup
 const axiosInstance = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-    "User-Agent": "Node.js/Axios",
-  },
+      headers: {
+      "Content-Type": "application/json",
+    },
   httpsAgent: new https.Agent({
     rejectUnauthorized: false,
     keepAlive: true,
@@ -39,15 +38,14 @@ function mergeSchemas(existingComponents, generatedComponents) {
 }
 
 
-
-
-
 // ✅ AI-based form update route
 router.post("/save-ai-form", async (req, res) => {
   const { prompt, existingSchema } = req.body;
 
   if (!prompt || !existingSchema || !Array.isArray(existingSchema.components)) {
-    return res.status(400).json({ success: false, error: "Missing or invalid prompt or schema" });
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing or invalid prompt or schema" });
   }
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
