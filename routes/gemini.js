@@ -84,10 +84,12 @@ Rules:
 - Don't duplicate components.
 - Keep keys the same unless the prompt says to change them.
 - Ensure valid Form.io structure.
-
+-
 Only return JSON. Do not explain anything.
 Additional Capabilities:
 - If the user requests field reordering (e.g., "move email to top"), reorder the components accordingly.
+Reorder the form fields based on the user's request. The user may ask to move a field to the top, bottom, or place it above/below another field. Maintain the structure and existing data. Do not ask again for unmatched fields when reordering. Just reorder as requested.
+
 - If the prompt suggests layout changes, use appropriate Form.io containers like:
   - "columns" for side-by-side layout
   - "panel" or "fieldset" for grouping fields
