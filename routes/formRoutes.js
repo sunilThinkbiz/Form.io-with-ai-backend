@@ -7,7 +7,8 @@ const Form = require('../models/formModel');
 router.post('/save', async (req, res) => {
   try {
     const { title, display, components } = req.body;
-    const form = new Form({ title, display, components });
+
+    const form = await Form({ title, display, components });
     const saved = await form.save();
     res.status(201).json(saved);
   } catch (err) {

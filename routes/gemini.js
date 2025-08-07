@@ -6,10 +6,9 @@ const https = require("https");
 
 // ✅ Axios instance setup
 const axiosInstance = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-    "User-Agent": "Node.js/Axios",
-  },
+      headers: {
+      "Content-Type": "application/json",
+    },
   httpsAgent: new https.Agent({
     rejectUnauthorized: false,
     keepAlive: true,
@@ -29,7 +28,7 @@ function mergeSchemas(existingComponents, generatedComponents) {
     const existing = existingMap.get(newComp.key);
     if (existing) {
       final.push({ ...existing, ...newComp }); // merge while keeping new order
-      existingMap.delete(newComp.key);
+      // existingMap.delete(newComp.key);
     } else {
       final.push(newComp);
     }
@@ -39,15 +38,14 @@ function mergeSchemas(existingComponents, generatedComponents) {
 }
 
 
-
-
-
 // ✅ AI-based form update route
 router.post("/save-ai-form", async (req, res) => {
   const { prompt, existingSchema } = req.body;
 
   if (!prompt || !existingSchema || !Array.isArray(existingSchema.components)) {
-    return res.status(400).json({ success: false, error: "Missing or invalid prompt or schema" });
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing or invalid prompt or schema" });
   }
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -61,8 +59,14 @@ You are a professional Form.io form schema generator.
 Input:
 1. A user's change request (e.g., "rename 'test field' to 'first name'")
 2. The current JSON schema in Form.io format
+- If extra fields are provided in the prompt or previously unmatched fields are confirmed, place them exactly where the user requested in the new schema.
+- Do NOT append them at the end unless the user explicitly says "add at the end".
+If user says "show fields when checkbox is checked", add conditional logic:
+"conditional": { "show": true, "when": "<checkbox-key>", "eq": "true" }
 
 Your task:
+- Modify or add fields based on the user request and any additional instructions.
+- If extra fields are provided in the prompt (e.g., unmatched fields), place them in the correct logical order based on user instructions.
 - Modify only what's needed based on the user request.
 - NEVER create a new component if the change only requires modifying an existing one.
 - If a field with a given label exists, and the request is to change it, update that exact component's "label" property.
