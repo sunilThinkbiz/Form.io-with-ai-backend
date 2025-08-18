@@ -1,19 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
-const axios = require("axios");
-const https = require("https");
 const generatePrompt = require("../utils/promptTemplate");
-// ✅ Axios instance setup
-const axiosInstance = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-  },
-  httpsAgent: new https.Agent({
-    rejectUnauthorized: false,
-    keepAlive: true,
-  }),
-});
+const axiosInstance = require("../utils/AxiosHttp");
 
 // ✅ Merge logic: update only what's needed, don't duplicate
 function mergeSchemas(existingComponents, generatedComponents) {
@@ -48,24 +37,28 @@ router.post("/save-ai-form", async (req, res) => {
   }
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  if (!GEMINI_API_KEY) {
-    return res.status(500).json({ success: false, error: "Missing API key" });
+  const GEMINI_URL = process.env.GEMINI_URL;
+  if (!GEMINI_API_KEY || !GEMINI_URL) {
+    return res
+      .status(500)
+      .json({ success: false, error: "Gemini config missing" });
   }
-
   const generationPrompt = generatePrompt(prompt, existingSchema);
 
-  const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   try {
-    const geminiResponse = await axiosInstance.post(GEMINI_API_URL, {
-      contents: [{ parts: [{ text: generationPrompt }] }],
-      generationConfig: {
-        temperature: 0.4,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 2048,
-      },
-    });
+    const geminiResponse = await axiosInstance.post(
+      `${GEMINI_URL}?key=${GEMINI_API_KEY}`,
+      {
+        contents: [{ parts: [{ text: generationPrompt }] }],
+        generationConfig: {
+          temperature: 0.4,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        },
+      }
+    );
 
     const rawText =
       geminiResponse?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
